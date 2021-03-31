@@ -12,6 +12,7 @@
   "dependencies": {
     "env-cmd": "^10.1.0",
     "esm": "^3.2.25",
-    "mongodb": "^3.6.5"
+    "mongodb": "^3.6.5",
+    "node-fetch": "^2.6.1"
   }
 }

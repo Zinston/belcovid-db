@@ -1,15 +1,19 @@
 import MongoClient from 'mongodb';
+import fetch from 'node-fetch';
+import {AGE_GROUPS_CASES, AGE_GROUPS_MORTALITY, PROVINCES, URLS} from './constants';
+import {objectFrom, provinceKey} from './utils';
 
 export default async function app() {
     /**
      * Connection URI. Update <username>, <password>, and <your-cluster-url> to reflect your cluster.
      * See https://docs.mongodb.com/ecosystem/drivers/node/ for more details
      */
+    // eslint-disable-next-line no-undef
     const uri = `mongodb+srv://Zinston:${process.env.MONGO_PASSWORD}@belcovidcluster.pz4dd.mongodb.net/belcovid?retryWrites=true&w=majority`;
     const client = await new MongoClient(uri, {useUnifiedTopology: true});
     try {
         await client.connect();
-        await listDatabases(client);
+        const newData = normalizeAllData(await fetchData());
     } catch (e) {
         console.error(e);
     } finally {
@@ -17,9 +21,88 @@ export default async function app() {
     }
 }
 
-async function listDatabases(client) {
-    const databasesList = await client.db().admin().listDatabases();
+async function fetchData() {
+    let data = [];
+    for (const key of Object.keys(URLS)) {
+        data.push([key, await (await fetch(URLS[key])).json()]);
+    }
+    return data;
+}
 
-    console.log("Databases:");
-    databasesList.databases.forEach(db => console.log(` - ${db.name}`));
+function normalizeAllData(data) {
+    const finalData = {};
+    for (const [key, values] of data) {
+        switch (key) {
+            case 'cases': {
+                finalData.cases = normalizeData('CASES', values, AGE_GROUPS_CASES);
+                break;
+            }
+            case 'hospitalizations': {
+                finalData.totalHospitalizations = normalizeData('TOTAL_IN', values);
+                finalData.newHospitalizations = normalizeData('NEW_IN', values);
+                finalData.totalICU = normalizeData('TOTAL_IN_ICU', values);
+                break;
+            }
+            case 'mortality': {
+                finalData.mortality = normalizeData('DEATHS', values, AGE_GROUPS_MORTALITY);
+                break;
+            }
+            case 'tests': {
+                finalData.tests = normalizeData('TESTS_ALL', values, AGE_GROUPS_MORTALITY);
+                break;
+            }
+        }
+    }
+    return finalData;
+}
+function normalizeData(dataKey, values, ageGroups) {
+    const data = objectFrom(Object.keys(PROVINCES), {});
+    for (const item of values) {
+        const province = (item.PROVINCE && provinceKey(item.PROVINCE)) || 'be';
+        const date = item.DATE;
+        if (!date) {
+            continue;
+        }
+
+        const value = +item[dataKey];
+        if (ageGroups) {
+            const ageGroup = item.AGEGROUP || 'Age unknown';
+            if (!data[province][date]) {
+                // Initialize the age group values.
+                data[province][date] = objectFrom(ageGroups, 0);
+            }
+            if (!data.be[date]) {
+                // Initialize the age group values for Belgium.
+                data.be[date] = objectFrom(ageGroups, 0);
+            }
+            const normalizedValue = data[province][date][ageGroup] || 0;
+            // Set province value at date for age group.
+            data[province][date][ageGroup] = normalizedValue + value;
+            // Add to total for province at date.
+            const totalValue = data[province][date].total || 0;
+            data[province][date].total = totalValue + value;
+            // Add to totals for Belgium at date.
+            if (province !== 'be') {
+                if (!data.be[date]) {
+                    data.be[date] = {};
+                }
+                // Add to total for Belgium at date for age group.
+                const belgiumValue = data.be[date][ageGroup] || 0;
+                data.be[date][ageGroup] = belgiumValue + value;
+                // Add to total for Belgium at date.
+                const belgiumTotal = data.be[date].total || 0;
+                data.be[date].total = belgiumTotal + value;
+            }
+        } else {
+            const provinceValue = data[province][date] || 0;
+            // Set province value at date.
+            data[province][date] = provinceValue + value;
+            // Add to total for Belgium at date.
+            if (province !== 'be') {
+                const belgiumValue = data.be[date] || 0;
+                data.be[date] = belgiumValue + value;
+            }
+        }
+    }
+    return data;
 }
