@@ -20,6 +20,10 @@ export const AGE_GROUPS_MORTALITY = [
     '85+',
     'Age unknown'
 ];
+export const MONGO_URI = `mongodb+srv://Zinston:${
+    // eslint-disable-next-line no-undef
+    process.env.MONGO_PASSWORD
+}@belcovidcluster.pz4dd.mongodb.net/belcovid?retryWrites=true&w=majority`;
 export const PROVINCES = {
     be: 'Belgium',
     ant: 'Antwerpen',
