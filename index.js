@@ -1,7 +1,8 @@
-import updateDatabase from './updateDatabase.js';
+import updateDatabase from './put.js';
 import express from 'express';
 import MongoClient from 'mongodb';
 import {MONGO_URI} from './constants.js';
+import {getDiff} from './get.js';
 
 connectMongoDB().catch(console.error).then(client => {
 	const db = client.db('belcovid');
@@ -13,6 +14,18 @@ connectMongoDB().catch(console.error).then(client => {
 		// Set the response HTTP header with HTTP status and Content type
 		res.statusCode = 200;
 		res.send('Hello World\n');
+	});
+	server.get('/:key/:fromId', async (req, res) => {
+		// Get the diff between the data at given id and the latest data.
+		const diff = await getDiff(db, req.params.key, req.params.fromId);
+		res.statusCode = 200;
+		res.send(diff);
+	});
+	server.get('/:key', async (req, res) => {
+		// Get the full diff.
+		const diff = await getDiff(db, req.params.key);
+		res.statusCode = 200;
+		res.send(diff);
 	});
 
 	// Handle 404 - Keep this as a last route

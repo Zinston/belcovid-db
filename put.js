@@ -1,7 +1,9 @@
 import fetch from 'node-fetch';
 import diff from 'changeset';
+import {v1 as uuidv1} from 'uuid';
 import {AGE_GROUPS_CASES, AGE_GROUPS_MORTALITY, PROVINCES, URLS} from './constants';
 import {objectFrom, provinceKey} from './utils';
+import {getLatestRecord} from './get';
 
 export default async function updateDatabase(db) {
     // Fetch and normalize Sciensano data.
@@ -11,21 +13,19 @@ export default async function updateDatabase(db) {
     for (const key of Object.keys(newData)) {
         const collection = db.collection(key);
         // Compute the latest recorded data from all recorded diffs.
-        const cursor = collection.find();
-        const allDiffs = await cursor.toArray();
-        let latestRecord = [];
-        for (const {changes} of allDiffs) {
-            latestRecord = diff.apply(changes, latestRecord);
-        }
+        const latestRecord = await getLatestRecord(db, key);
 
         // Compute the diff between the latest recorded data and the new
         // data.
-        const changes = diff(latestRecord, newData[key]);
+        const changes = diff(latestRecord.record, newData[key]);
         if (changes.length) {
             // Insert the diff into the database.
-            const response = await collection.insertOne({changes});
+            await collection.insertOne({
+                diffId: uuidv1(),
+                changes,
+            });
             // eslint-disable-next-line no-console
-            console.log(response);
+            console.log(`insert new diff for ${key}`);
         } else {
             // eslint-disable-next-line no-console
             console.log(`no changes to record for ${key}`);
