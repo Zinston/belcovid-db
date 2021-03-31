@@ -1,5 +1,6 @@
 import MongoClient from 'mongodb';
 import fetch from 'node-fetch';
+import diff from 'changeset';
 import {AGE_GROUPS_CASES, AGE_GROUPS_MORTALITY, PROVINCES, URLS} from './constants';
 import {objectFrom, provinceKey} from './utils';
 
@@ -8,12 +9,37 @@ export default async function app() {
      * Connection URI. Update <username>, <password>, and <your-cluster-url> to reflect your cluster.
      * See https://docs.mongodb.com/ecosystem/drivers/node/ for more details
      */
-    // eslint-disable-next-line no-undef
-    const uri = `mongodb+srv://Zinston:${process.env.MONGO_PASSWORD}@belcovidcluster.pz4dd.mongodb.net/belcovid?retryWrites=true&w=majority`;
+    const uri = `mongodb+srv://Zinston:${
+        // eslint-disable-next-line no-undef
+        process.env.MONGO_PASSWORD
+    }@belcovidcluster.pz4dd.mongodb.net/belcovid?retryWrites=true&w=majority`;
     const client = await new MongoClient(uri, {useUnifiedTopology: true});
     try {
         await client.connect();
+        const db = client.db('belcovid');
+
+        // Fetch and normalize Sciensano data.
         const newData = normalizeAllData(await fetchData());
+
+        // Update the database with the latest diffs.
+        for (const key of Object.keys(newData)) {
+            const collection = db.collection(key);
+            // Compute the latest recorded data from all recorded diffs.
+            const cursor = collection.find();
+            const allDiffs = await cursor.toArray();
+            let latestRecord = [];
+            for (const {changes} of allDiffs) {
+                latestRecord = diff.apply(changes, latestRecord);
+            }
+
+            // Compute the diff between the latest recorded data and the new
+            // data.
+            const changes = diff(latestRecord, newData[key]);
+            if (changes.length) {
+                // Insert the diff into the database.
+                await collection.insertOne({changes});
+            }
+        }
     } catch (e) {
         console.error(e);
     } finally {
