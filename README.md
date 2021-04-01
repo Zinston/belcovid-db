@@ -113,9 +113,9 @@ This route is the one to use to get a diff of the data, to build it back from.
 - `idFrom` is optional and is the ID of the last fetched diff. If none is
   provided, a full diff is returned, from `[]` to the latest data.
 
-Returns `{ id: string, changes: object }` where `id` is the id of the diff, to
-send back to the API for an update at a later date, and `changes` is the diff
-itself.
+Returns `{ start: string, end: string, changes: object }` where `start` is the id
+of the start of the diff, `end` is the id of the end of the diff, to send back to
+the API for an update at a later date, and `changes` is the diff itself.
 
 ### `/update`
 
