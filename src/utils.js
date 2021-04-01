@@ -1,4 +1,4 @@
-import { PROVINCE_KEYS } from "./constants";
+import {PROVINCE_KEYS} from "./constants";
 
 /**
  * Return an object with the given `keys`, all set to the given `initalValue`.
@@ -12,7 +12,7 @@ import { PROVINCE_KEYS } from "./constants";
             ? [...initialValue] :
             (
                 typeof initialValue === 'object'
-                    ? {...initialValue}
+                    ? Object.assign({}, initialValue)
                     : initialValue
             );
         object[key] = value;

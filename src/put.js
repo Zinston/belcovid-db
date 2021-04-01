@@ -5,7 +5,7 @@ import {AGE_GROUPS_CASES, AGE_GROUPS_MORTALITY, PROVINCES, URLS} from './constan
 import {objectFrom, provinceKey} from './utils';
 import {getLatestRecord} from './get';
 
-export default async function updateDatabase(db) {
+export async function updateDatabase(db) {
     // Fetch and normalize Sciensano data.
     const newData = normalizeAllData(await fetchData());
 

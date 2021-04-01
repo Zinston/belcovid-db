@@ -4,13 +4,16 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "env-cmd -f ./config/dev.env node -r esm index.js",
-    "start": "node -r esm index.js"
+    "build": "npm run clean && npm run build-babel",
+    "build-babel": "babel -d ./build ./src -s",
+    "clean": "rm -rf build && mkdir build",
+    "dev": "env-cmd -f ./config/dev.env babel-node ./src/index.js",
+    "start": "npm run build && babel-node ./build/index.js"
   },
   "author": "Antoine Guenet",
   "license": "MIT",
-  "type": "module",
   "dependencies": {
+    "babel-preset-env": "^1.7.0",
     "changeset": "^0.2.6",
     "env-cmd": "^10.1.0",
     "esm": "^3.2.25",
@@ -20,5 +23,9 @@
     "node-fetch": "^2.6.1",
     "npm": "^7.7.6",
     "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.13.14",
+    "babel-cli": "^6.26.0"
   }
 }

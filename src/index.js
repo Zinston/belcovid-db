@@ -1,15 +1,11 @@
-import updateDatabase from './put.js';
 import express from 'express';
 import MongoClient from 'mongodb';
 import {MONGO_URI} from './constants.js';
 import {getDiff} from './get.js';
+import {updateDatabase} from './put.js';
 
 connectMongoDB().catch(console.error).then(client => {
 	const db = client.db('belcovid');
-	// eslint-disable-next-line no-undef
-	const hostname = process.env.HOSTNAME;
-	// eslint-disable-next-line no-undef
-	const port = process.env.PORT;
 
 	const server = express();
 	server.get('/:key/:fromId', async (req, res) => {
@@ -37,9 +33,10 @@ connectMongoDB().catch(console.error).then(client => {
 	});
 
 	// listen for request on port 3000, and as a callback function have the port listened on logged
-	server.listen(port, hostname, () => {
-		// eslint-disable-next-line no-console
-		console.log(`Server running at http://${hostname}:${port}/`);
+	// eslint-disable-next-line no-undef
+	server.listen(process.env.PORT || 3000, () => {
+		// eslint-disable-next-line no-console,no-undef
+		console.log(`Listening to port ${process.env.PORT || 3000}`);
 	});
 });
 
