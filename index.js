@@ -6,15 +6,12 @@ import {getDiff} from './get.js';
 
 connectMongoDB().catch(console.error).then(client => {
 	const db = client.db('belcovid');
-	const hostname = '127.0.0.1';
-	const port = 3000;
+	// eslint-disable-next-line no-undef
+	const hostname = process.env.HOSTNAME;
+	// eslint-disable-next-line no-undef
+	const port = process.env.PORT;
 
 	const server = express();
-	server.get('/', (req, res) => {
-		// Set the response HTTP header with HTTP status and Content type
-		res.statusCode = 200;
-		res.send('Hello World\n');
-	});
 	server.get('/:key/:fromId', async (req, res) => {
 		// Get the diff between the data at given id and the latest data.
 		const diff = await getDiff(db, req.params.key, req.params.fromId);
