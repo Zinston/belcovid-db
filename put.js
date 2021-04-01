@@ -10,6 +10,7 @@ export default async function updateDatabase(db) {
     const newData = normalizeAllData(await fetchData());
 
     // Update the database with the latest diffs.
+    const updatedKeys = [];
     for (const key of Object.keys(newData)) {
         const collection = db.collection(key);
         // Compute the latest recorded data from all recorded diffs.
@@ -26,11 +27,13 @@ export default async function updateDatabase(db) {
             });
             // eslint-disable-next-line no-console
             console.log(`insert new diff for ${key}`);
+            updatedKeys.push(key);
         } else {
             // eslint-disable-next-line no-console
             console.log(`no changes to record for ${key}`);
         }
     }
+    return updatedKeys;
 }
 
 async function fetchData() {

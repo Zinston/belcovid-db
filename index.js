@@ -27,6 +27,11 @@ connectMongoDB().catch(console.error).then(client => {
 		res.statusCode = 200;
 		res.send(diff);
 	});
+	server.get('/update', async (req, res) => {
+		const updates = await updateDatabase(db);
+		res.statusCode = 200;
+		res.send({updated: updates});
+	});
 
 	// Handle 404 - Keep this as a last route
 	server.use((req, res, next) => {
@@ -38,7 +43,6 @@ connectMongoDB().catch(console.error).then(client => {
 	server.listen(port, hostname, () => {
 		// eslint-disable-next-line no-console
 		console.log(`Server running at http://${hostname}:${port}/`);
-		updateDatabase(db);
 	});
 });
 
