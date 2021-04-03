@@ -4,8 +4,8 @@ export async function getDiff(db, key, fromId) {
     const startRecord = fromId ? await getRecord(db, key, fromId) : {id: '', record: []};
     const endRecord = await getLatestRecord(db, key);
     return {
-        start: startRecord.id,
-        end: endRecord.id,
+        start: [startRecord.id, startRecord.datetime],
+        end: [endRecord.id, endRecord.datetime],
         changes: diff(startRecord.record, endRecord.record),
     };
 }
@@ -23,9 +23,11 @@ async function getRecord(db, key, id) {
     }
     let record = [];
     let recordId;
+    let recordDatetime;
     for (const singleDiff of allDiffs) {
         record = diff.apply(singleDiff.changes, record);
         recordId = singleDiff.diffId;
+        recordDatetime = singleDiff.datetime;
     }
-    return {id: recordId, record};
+    return {id: recordId, datetime: recordDatetime, record};
 }
