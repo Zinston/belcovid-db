@@ -23,6 +23,7 @@ export async function updateDatabase(db) {
             // Insert the diff into the database.
             await collection.insertOne({
                 diffId: uuidv1(),
+                datetime: new Date(),
                 changes,
             });
             // eslint-disable-next-line no-console
