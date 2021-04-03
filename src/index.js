@@ -14,16 +14,16 @@ connectMongoDB().catch(console.error).then(client => {
 		res.statusCode = 200;
 		res.send(diff);
 	});
+	server.get('/update', async (req, res) => {
+		const updates = await updateDatabase(db);
+		res.statusCode = 200;
+		res.send({updated: updates});
+	});
 	server.get('/:key', async (req, res) => {
 		// Get the full diff.
 		const diff = await getDiff(db, req.params.key);
 		res.statusCode = 200;
 		res.send(diff);
-	});
-	server.get('/update', async (req, res) => {
-		const updates = await updateDatabase(db);
-		res.statusCode = 200;
-		res.send({updated: updates});
 	});
 
 	// Handle 404 - Keep this as a last route
