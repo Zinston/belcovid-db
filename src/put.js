@@ -6,6 +6,9 @@ import {objectFrom, provinceKey} from './utils';
 import {getLatestRecord} from './get';
 
 export async function updateDatabase(db) {
+    // Save the time of starting the update.
+    db.collection('lastUpdate').insertOne({datetime: new Date()});
+
     // Fetch and normalize Sciensano data.
     const newData = normalizeAllData(await fetchData());
 

@@ -19,6 +19,11 @@ connectMongoDB().catch(console.error).then(client => {
 		res.statusCode = 200;
 		res.send({updated: updates});
 	});
+	server.get('/update-time', async (req, res) => {
+		const updateTimes = await db.collection('lastUpdate').find().toArray();
+		res.statusCode = 200;
+		res.send(updateTimes[updateTimes.length - 1]);
+	});
 	server.get('/:key', async (req, res) => {
 		// Get the full diff.
 		const diff = await getDiff(db, req.params.key);
