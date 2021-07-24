@@ -1,7 +1,7 @@
 import fetch from 'node-fetch';
 import diff from 'changeset';
 import {v1 as uuidv1} from 'uuid';
-import {AGE_GROUPS_CASES, AGE_GROUPS_MORTALITY, PROVINCES, URLS} from './constants';
+import {AGE_GROUPS_CASES, AGE_GROUPS_MORTALITY, AGE_GROUPS_VACCINATION, PROVINCES, URLS} from './constants';
 import {objectFrom, provinceKey} from './utils';
 import {getLatestRecord} from './get';
 
@@ -69,6 +69,12 @@ function normalizeAllData(data) {
             case 'tests': {
                 finalData.tests = normalizeData('TESTS_ALL', values, AGE_GROUPS_MORTALITY);
                 break;
+            }
+            case 'vaccination': {
+                finalData.vaccinationPartial = normalizeData(
+                    'COUNT', values.filter(item => item.DOSE === 'A'), AGE_GROUPS_VACCINATION);
+                finalData.vaccinationFull = normalizeData(
+                    'COUNT', values.filter(item => ['B', 'C'].includes(item.DOSE)), AGE_GROUPS_VACCINATION);
             }
         }
     }

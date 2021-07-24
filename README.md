@@ -18,7 +18,7 @@ from typescript syntax for ease of presentation of interfaces).
 
 With:
 ```js
-// Two distributions of age groups exist, due to the way Sciensano reports its data.
+// Three distributions of age groups exist, due to the way Sciensano reports its data.
 CaseAgeGroups = [
     '0-9',
     '10-19',
@@ -41,9 +41,20 @@ MortalityAgeGroups = [
     '85+',
     'Age unknown'
 ];
-interface AgeSortedFigures<('cases' | 'mortality') as T> {
+VaccinationAgeGroups = [
+    '0-17',
+    '18-34',
+    '35-44',
+    '45-54',
+    '55-64',
+    '65-74',
+    '75-84',
+    '85+',
+    'Age unknown',
+];
+interface AgeSortedFigures<('cases' | 'mortality' | 'vaccinationPartial' | 'vaccinationFull') as T> {
     total: number,
-    [T === 'cases' ? CaseAgeGroups : MortalityAgeGroups]: number, // for each age group
+    [T === 'cases' ? CaseAgeGroups : (MortalityAgeGroups ? MortalityAgeGroups : VaccinationAgeGroups)]: number, // for each age group
 }
 interface Provinces {
     be: 'Belgium',
@@ -96,6 +107,20 @@ interface tests {
         [date: string]: number, // for each date
     },
 }
+// The number of people who have had only one dose of a two-dose vaccine.
+interface vaccinationPartial {
+    be: {
+        [date: string]: AgeSortedFigures<'vaccination'>, // for each date
+    }
+    [province: keyof Provinces]: {}, // for each province but 'be' (data unavailable)
+}
+// The number of people who are fully vaccinated.
+interface vaccinationFull {
+    be: {
+        [date: string]: AgeSortedFigures<'vaccination'>, // for each date
+    }
+    [province: keyof Provinces]: {}, // for each province but 'be' (data unavailable)
+}
 ```
 
 ## API
@@ -110,6 +135,8 @@ This route is the one to use to get a diff of the data, to build it back from.
     - `'totalICU'`
     - `'mortality'`
     - `'tests'`
+    - `'vaccinationPartial'`
+    - `'vaccinationFull'`
 - `idFrom` is optional and is the ID of the last fetched diff. If none is
   provided, a full diff is returned, from `[]` to the latest data.
 

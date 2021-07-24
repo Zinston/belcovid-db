@@ -20,6 +20,17 @@ export const AGE_GROUPS_MORTALITY = [
     '85+',
     'Age unknown'
 ];
+export const AGE_GROUPS_VACCINATION = [
+    '0-17',
+    '18-34',
+    '35-44',
+    '45-54',
+    '55-64',
+    '65-74',
+    '75-84',
+    '85+',
+    'Age unknown'
+];
 export const MONGO_URI = `mongodb+srv://Zinston:${
     // eslint-disable-next-line no-undef
     process.env.MONGO_PASSWORD
@@ -47,4 +58,5 @@ export const URLS = {
     tests: 'https://epistat.sciensano.be/Data/COVID19BE_tests.json',
     cases: 'https://epistat.sciensano.be/Data/COVID19BE_CASES_AGESEX.json',
     mortality: 'https://epistat.sciensano.be/Data/COVID19BE_MORT.json',
+    vaccination: 'https://epistat.sciensano.be/Data/COVID19BE_VACC.json',
 };
