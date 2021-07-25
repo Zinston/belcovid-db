@@ -15,6 +15,7 @@
   "dependencies": {
     "babel-preset-env": "^1.7.0",
     "changeset": "^0.2.6",
+    "cors": "^2.8.5",
     "env-cmd": "^10.1.0",
     "esm": "^3.2.25",
     "express": "^4.17.1",
