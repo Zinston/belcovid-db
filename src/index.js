@@ -1,5 +1,4 @@
 import express from 'express';
-import cors from 'cors';
 import MongoClient from 'mongodb';
 import {MONGO_URI} from './constants.js';
 import {getDiff} from './get.js';
@@ -9,7 +8,10 @@ connectMongoDB().catch(console.error).then(client => {
 	const db = client.db('belcovid');
 
 	const server = express();
-	server.use(cors());
+	server.use((req, res, next) => {
+		res.header('Access-Control-Allow-Origin', '*');
+		next();
+	});
 	server.get('/:key/:fromId', async (req, res) => {
 		// Get the diff between the data at given id and the latest data.
 		const diff = await getDiff(db, req.params.key, req.params.fromId);
