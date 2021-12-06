@@ -17,7 +17,7 @@ export async function getDiff(db, key, fromId) {
     return result;
 }
 export async function getLatestRecord(db, key) {
-    return getRecord(db, key, 'last');
+    return db.collection(`latestRecord`).findOne({name: key}) || getRecord(db, key, 'last');
 }
 async function getRecord(db, key, id) {
     const collection = db.collection(key);

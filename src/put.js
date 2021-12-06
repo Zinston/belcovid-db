@@ -32,11 +32,26 @@ export async function updateDatabase(db) {
             // eslint-disable-next-line no-console
             console.log(`insert new diff for ${key}`);
             updatedKeys.push(key);
+            await db.collection(`latestRecord`).replaceOne(
+                {name: key},
+                {name: key, record: newData[key]},
+                {upsert: true},
+            );
+            console.log('update latest record');
         } else {
             // eslint-disable-next-line no-console
             console.log(`no changes to record for ${key}`);
+            // if (!db.collection(`latestRecord`).find({name: key})) {
+            //     await db.collection(`latestRecord`).replaceOne(
+            //         {name: key},
+            //         {name: key, record: newData[key]},
+            //         {upsert: true},
+            //     );
+            //     console.log('update latest record');
+            // }
         }
     }
+    console.log('finished updating');
     return updatedKeys;
 }
 

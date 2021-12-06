@@ -13,7 +13,7 @@ connectMongoDB().catch(console.error).then(client => {
 	server.use(cors());
 
 	server.get('/update', async (req, res) => {
-		updateDatabase(db);
+		updateDatabase(db); // do not wait (preventing timeout);
 		res.statusCode = 200;
 		res.send('updating the db');
 	});
