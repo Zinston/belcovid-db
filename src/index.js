@@ -22,7 +22,7 @@ connectMongoDB().catch(console.error).then(client => {
 		res.statusCode = 200;
 		res.json(updateTimes[updateTimes.length - 1]);
 	});
-	server.get('/:key/:fromId?', async (req, res) => {
+	server.get('/get/:key/:fromId?', async (req, res) => {
 		// Get the diff between the data at given id and the latest data.
 		const diff = await getDiff(db, req.params.key, req.params.fromId);
 		res.statusCode = 200;

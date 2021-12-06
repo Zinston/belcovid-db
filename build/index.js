@@ -58,6 +58,10 @@ var _get = require('./get.js');
 
 var _put = require('./put.js');
 
+var _cors = require('cors');
+
+var _cors2 = _interopRequireDefault(_cors);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
@@ -66,21 +70,24 @@ connectMongoDB().catch(console.error).then(function (client) {
 	var db = client.db('belcovid');
 
 	var server = (0, _express2.default)();
-	server.get('/:key/:fromId', function () {
+	(0, _cors2.default)({ credentials: true, origin: true });
+	server.use((0, _cors2.default)());
+
+	server.get('/update', function () {
 		var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(req, res) {
-			var diff;
+			var updates;
 			return regeneratorRuntime.wrap(function _callee$(_context) {
 				while (1) {
 					switch (_context.prev = _context.next) {
 						case 0:
 							_context.next = 2;
-							return (0, _get.getDiff)(db, req.params.key, req.params.fromId);
+							return (0, _put.updateDatabase)(db);
 
 						case 2:
-							diff = _context.sent;
+							updates = _context.sent;
 
 							res.statusCode = 200;
-							res.send(diff);
+							res.json({ updated: updates });
 
 						case 5:
 						case 'end':
@@ -94,21 +101,21 @@ connectMongoDB().catch(console.error).then(function (client) {
 			return _ref.apply(this, arguments);
 		};
 	}());
-	server.get('/:key', function () {
+	server.get('/update-time', function () {
 		var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(req, res) {
-			var diff;
+			var updateTimes;
 			return regeneratorRuntime.wrap(function _callee2$(_context2) {
 				while (1) {
 					switch (_context2.prev = _context2.next) {
 						case 0:
 							_context2.next = 2;
-							return (0, _get.getDiff)(db, req.params.key);
+							return db.collection('lastUpdate').find().toArray();
 
 						case 2:
-							diff = _context2.sent;
+							updateTimes = _context2.sent;
 
 							res.statusCode = 200;
-							res.send(diff);
+							res.json(updateTimes[updateTimes.length - 1]);
 
 						case 5:
 						case 'end':
@@ -122,21 +129,21 @@ connectMongoDB().catch(console.error).then(function (client) {
 			return _ref2.apply(this, arguments);
 		};
 	}());
-	server.get('/update', function () {
+	server.get('/:key/:fromId?', function () {
 		var _ref3 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3(req, res) {
-			var updates;
+			var diff;
 			return regeneratorRuntime.wrap(function _callee3$(_context3) {
 				while (1) {
 					switch (_context3.prev = _context3.next) {
 						case 0:
 							_context3.next = 2;
-							return (0, _put.updateDatabase)(db);
+							return (0, _get.getDiff)(db, req.params.key, req.params.fromId);
 
 						case 2:
-							updates = _context3.sent;
+							diff = _context3.sent;
 
 							res.statusCode = 200;
-							res.send({ updated: updates });
+							res.json(diff);
 
 						case 5:
 						case 'end':

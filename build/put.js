@@ -15,11 +15,15 @@ var updateDatabase = exports.updateDatabase = function () {
             while (1) {
                 switch (_context.prev = _context.next) {
                     case 0:
+                        // Save the time of starting the update.
+                        db.collection('lastUpdate').insertOne({ datetime: new Date() });
+
+                        // Fetch and normalize Sciensano data.
                         _context.t0 = normalizeAllData;
-                        _context.next = 3;
+                        _context.next = 4;
                         return fetchData();
 
-                    case 3:
+                    case 4:
                         _context.t1 = _context.sent;
                         newData = (0, _context.t0)(_context.t1);
 
@@ -29,12 +33,12 @@ var updateDatabase = exports.updateDatabase = function () {
                         _iteratorNormalCompletion = true;
                         _didIteratorError = false;
                         _iteratorError = undefined;
-                        _context.prev = 9;
+                        _context.prev = 10;
                         _iterator = Object.keys(newData)[Symbol.iterator]();
 
-                    case 11:
+                    case 12:
                         if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
-                            _context.next = 29;
+                            _context.next = 30;
                             break;
                         }
 
@@ -42,10 +46,10 @@ var updateDatabase = exports.updateDatabase = function () {
                         collection = db.collection(key);
                         // Compute the latest recorded data from all recorded diffs.
 
-                        _context.next = 16;
+                        _context.next = 17;
                         return (0, _get.getLatestRecord)(db, key);
 
-                    case 16:
+                    case 17:
                         latestRecord = _context.sent;
 
 
@@ -54,75 +58,76 @@ var updateDatabase = exports.updateDatabase = function () {
                         changes = (0, _changeset2.default)(latestRecord.record, newData[key]);
 
                         if (!changes.length) {
-                            _context.next = 25;
+                            _context.next = 26;
                             break;
                         }
 
-                        _context.next = 21;
+                        _context.next = 22;
                         return collection.insertOne({
                             diffId: (0, _uuid.v1)(),
+                            datetime: new Date(),
                             changes: changes
                         });
 
-                    case 21:
+                    case 22:
                         // eslint-disable-next-line no-console
                         console.log('insert new diff for ' + key);
                         updatedKeys.push(key);
-                        _context.next = 26;
+                        _context.next = 27;
                         break;
 
-                    case 25:
+                    case 26:
                         // eslint-disable-next-line no-console
                         console.log('no changes to record for ' + key);
 
-                    case 26:
+                    case 27:
                         _iteratorNormalCompletion = true;
-                        _context.next = 11;
+                        _context.next = 12;
                         break;
 
-                    case 29:
-                        _context.next = 35;
+                    case 30:
+                        _context.next = 36;
                         break;
 
-                    case 31:
-                        _context.prev = 31;
-                        _context.t2 = _context['catch'](9);
+                    case 32:
+                        _context.prev = 32;
+                        _context.t2 = _context['catch'](10);
                         _didIteratorError = true;
                         _iteratorError = _context.t2;
 
-                    case 35:
-                        _context.prev = 35;
+                    case 36:
                         _context.prev = 36;
+                        _context.prev = 37;
 
                         if (!_iteratorNormalCompletion && _iterator.return) {
                             _iterator.return();
                         }
 
-                    case 38:
-                        _context.prev = 38;
+                    case 39:
+                        _context.prev = 39;
 
                         if (!_didIteratorError) {
-                            _context.next = 41;
+                            _context.next = 42;
                             break;
                         }
 
                         throw _iteratorError;
 
-                    case 41:
-                        return _context.finish(38);
-
                     case 42:
-                        return _context.finish(35);
+                        return _context.finish(39);
 
                     case 43:
-                        return _context.abrupt('return', updatedKeys);
+                        return _context.finish(36);
 
                     case 44:
+                        return _context.abrupt('return', updatedKeys);
+
+                    case 45:
                     case 'end':
                         return _context.stop();
                 }
             }
-        }, _callee, this, [[9, 31, 35, 43], [36,, 38, 42]]);
+        }, _callee, this, [[10, 32, 36, 44], [37,, 39, 43]]);
     }));
 
     return function updateDatabase(_x) {
@@ -279,6 +284,15 @@ function normalizeAllData(data) {
                     {
                         finalData.tests = normalizeData('TESTS_ALL', values, _constants.AGE_GROUPS_MORTALITY);
                         break;
+                    }
+                case 'vaccination':
+                    {
+                        finalData.vaccinationPartial = normalizeData('COUNT', values.filter(function (item) {
+                            return item.DOSE === 'A';
+                        }), _constants.AGE_GROUPS_VACCINATION);
+                        finalData.vaccinationFull = normalizeData('COUNT', values.filter(function (item) {
+                            return ['B', 'C'].includes(item.DOSE);
+                        }), _constants.AGE_GROUPS_VACCINATION);
                     }
             }
         }
