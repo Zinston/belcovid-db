@@ -13,9 +13,9 @@ connectMongoDB().catch(console.error).then(client => {
 	server.use(cors());
 
 	server.get('/update', async (req, res) => {
-		const updates = await updateDatabase(db);
+		updateDatabase(db);
 		res.statusCode = 200;
-		res.json({updated: updates});
+		res.send('updating the db');
 	});
 	server.get('/update-time', async (req, res) => {
 		const updateTimes = await db.collection('lastUpdate').find().toArray();
